@@ -9,8 +9,7 @@ sentence-transformers
 chromadb
 
 # LLM
-ollama
-google-genai
+groq
 
 # UI
 streamlit

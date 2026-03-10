@@ -2,30 +2,52 @@ import os
 import streamlit as st
 import chromadb
 from sentence_transformers import SentenceTransformer
-from google import genai
+from groq import Groq
 from dotenv import load_dotenv
 
 # LOAD ENV VARIABLES
 load_dotenv()
 
-# GEMINI CLIENT
-client_gemini = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
 # PAGE CONFIG
-st.set_page_config(page_title="Telecom AI Agent", layout="wide")
+st.set_page_config(
+    page_title="Telecom AI Agent",
+    page_icon="📡",
+    layout="wide"
+)
 
-# LOAD EMBEDDING MODEL
-embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+# LOAD GROQ CLIENT
+groq_client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
-# LOAD CHROMADB
+# CACHE EMBEDDING MODEL
+@st.cache_resource
+def load_embedding_model():
+    return SentenceTransformer(
+        "sentence-transformers/all-MiniLM-L6-v2"
+    )
+
+embedding_model = load_embedding_model()
+
+# CACHE VECTOR DATABASE
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PERSIST_DIRECTORY = os.path.join(BASE_DIR, "vectorstore")
 
-client = chromadb.PersistentClient(path=PERSIST_DIRECTORY)
+@st.cache_resource
+def load_vector_db():
 
-collection = client.get_or_create_collection(
-    name="telecom_logs"
-)
+    client = chromadb.PersistentClient(
+        path=PERSIST_DIRECTORY
+    )
+
+    collection = client.get_or_create_collection(
+        name="telecom_docs"
+    )
+
+    return collection
+
+collection = load_vector_db()
+
 
 # SIDEBAR
 st.sidebar.title("⚙ Settings")
@@ -33,72 +55,113 @@ st.sidebar.title("⚙ Settings")
 if st.sidebar.button("Clear Chat"):
     st.session_state.messages = []
 
-st.sidebar.markdown("**Model:** Gemini 2.0 Flash")
+st.sidebar.markdown("**Model:** Llama-3.1-8B (Groq)")
+st.sidebar.markdown("**Embedding:** MiniLM")
 st.sidebar.markdown("**Vector DB:** ChromaDB")
 
 # CHAT STATE
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# MAIN UI
+# APP TITLE
 st.title("📡 Telecom Network AI Agent")
-st.caption("RAG using ChromaDB + Gemini")
+st.caption("RAG + Streaming LLM for Telecom Incident Analysis")
 
-# SHOW CHAT HISTORY
+# DISPLAY CHAT HISTORY
 for message in st.session_state.messages:
+
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# USER INPUT
-if user_query := st.chat_input("Ask about telecom logs or call drop issues..."):
 
-    st.session_state.messages.append({"role": "user", "content": user_query})
+# VECTOR SEARCH TOOL
+def query_vector_db(query):
 
-    with st.chat_message("user"):
-        st.markdown(user_query)
+    query_embedding = embedding_model.encode(query).tolist()
 
-    # EMBEDDING
-    query_embedding = embedding_model.encode(user_query).tolist()
-
-    # VECTOR SEARCH
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=4
     )
 
     docs = results["documents"][0]
-    context = "\n\n".join(docs)
+    # print(docs)
 
-    # RAG PROMPT
-    rag_prompt = f"""
-You are a senior telecom network analyst.
+    return docs
 
-Telecom Logs:
-{context}
 
-User Question:
-{user_query}
+# STREAM LLM RESPONSE
+def stream_llm(prompt):
 
-Provide structured output:
+    completion = groq_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a telecom network troubleshooting expert."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.2,
+        stream=True
+    )
 
-Root Cause:
-Evidence:
-Recommended Solution:
-"""
+    for chunk in completion:
 
-    # GEMINI CALL
+        delta = chunk.choices[0].delta.content
+
+        if delta:
+            yield delta
+
+
+# USER INPUT
+if user_query := st.chat_input("Ask about telecom network issues..."):
+
+    # save user message
+    st.session_state.messages.append(
+        {"role": "user", "content": user_query}
+    )
+
+    with st.chat_message("user"):
+        st.markdown(user_query)
+
+    # assistant response
     with st.chat_message("assistant"):
+
         with st.spinner("Analyzing telecom logs..."):
 
-            response = client_gemini.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=rag_prompt
-            )
+            # VECTOR SEARCH
+            logs = query_vector_db(user_query)
 
-            answer = response.text
+            context = "\n".join(logs)
 
-            st.markdown(answer)
+            # PROMPT
+            prompt = f"""
+You are a senior telecom network analyst.
 
+User Query:
+{user_query}
+
+Relevant Telecom Logs:
+{context}
+
+Generate a structured telecom incident report.
+
+Issue Summary:
+Root Cause:
+Evidence from Logs:
+Recommended Resolution Steps:
+"""
+
+        # STREAM RESPONSE
+        response = st.write_stream(
+            stream_llm(prompt)
+        )
+
+    # SAVE RESPONSE
     st.session_state.messages.append(
-        {"role": "assistant", "content": answer}
+        {"role": "assistant", "content": response}
     )

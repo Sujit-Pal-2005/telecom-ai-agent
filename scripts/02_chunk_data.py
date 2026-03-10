@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INPUT_PATH = os.path.join(BASE_DIR, "data", "processed", "cleaned_logs.csv")
 OUTPUT_PATH = os.path.join(BASE_DIR, "data", "chunks", "text_chunks.json")
 
-CHUNK_SIZE = 100   
+CHUNK_SIZE = 20  
 
 
 # CONVERT ROW TO TEXT
