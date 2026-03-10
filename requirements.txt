@@ -1,0 +1,19 @@
+# Core Data Handling
+pandas
+numpy==1.26.4
+
+# Embeddings
+sentence-transformers
+
+# Vector Database
+chromadb
+
+# LLM
+ollama
+google-genai
+
+# UI
+streamlit
+
+# Environment Variables
+python-dotenv

@@ -1,0 +1,12 @@
+pycache/
+*.pyc
+*.pyo
+*.pyd
+*.log
+venv/
+.env
+env/
+vectorstore/
+*.bin
+.vscode/
+test.py
