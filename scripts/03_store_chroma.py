@@ -44,7 +44,7 @@ def store_in_chroma(input_path, persist_directory):
         embeddings=embeddings.tolist(),
         ids=ids
     )
-
+    
     print("Data stored successfully!")
     print(f"Database location: {persist_directory}")
 

@@ -75,20 +75,27 @@ for message in st.session_state.messages:
 
 
 # VECTOR SEARCH TOOL
-def query_vector_db(query):
+def query_vector_db(query, top_k=80):
 
-    query_embedding = embedding_model.encode(query).tolist()
+    # Encode query (batch for efficiency)
+    query_embedding = embedding_model.encode([query])[0].tolist()
 
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=4
+        n_results=top_k,
+        include=["documents", "distances"]
     )
 
     docs = results["documents"][0]
-    # print(docs)
+    scores = results["distances"][0]
 
-    return docs
+    # Optional filtering by similarity
+    filtered_docs = []
+    for doc, score in zip(docs, scores):
+        if score < 1.2:   
+            filtered_docs.append(doc)
 
+    return filtered_docs
 
 # STREAM LLM RESPONSE
 def stream_llm(prompt):
@@ -139,6 +146,22 @@ if user_query := st.chat_input("Ask about telecom network issues..."):
             context = "\n".join(logs)
 
             # PROMPT
+#             prompt = f"""
+# You are a senior telecom network analyst.
+
+# User Query:
+# {user_query}
+
+# Relevant Telecom Logs:
+# {context}
+
+# Generate a structured telecom incident report.
+
+# Issue Summary:
+# Root Cause:
+# Evidence from Logs:
+# Recommended Resolution Steps:
+# """
             prompt = f"""
 You are a senior telecom network analyst.
 
@@ -148,14 +171,22 @@ User Query:
 Relevant Telecom Logs:
 {context}
 
-Generate a structured telecom incident report.
+TASK:
+Analyze all logs collectively and produce ONE final consolidated telecom incident report.
 
-Issue Summary:
+IMPORTANT RULES:
+- Generate ONLY ONE report
+- Do NOT repeat reports
+- Do NOT create multiple regions
+- If multiple logs exist, summarize them into a single analysis
+
+Output Format (STRICT):
+
+Region:
+Observation:
 Root Cause:
-Evidence from Logs:
-Recommended Resolution Steps:
+Suggested Resolution:
 """
-
         # STREAM RESPONSE
         response = st.write_stream(
             stream_llm(prompt)
