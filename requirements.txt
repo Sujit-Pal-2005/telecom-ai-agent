@@ -16,3 +16,9 @@ streamlit
 
 # Environment Variables
 python-dotenv
+
+# Database Connector
+mysql-connector-python
+sqlalchemy
+cryptography
+

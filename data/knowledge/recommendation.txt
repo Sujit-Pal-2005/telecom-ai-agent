@@ -1,0 +1,31 @@
+=== TELECOM KNOWLEDGE: STANDARD RECOMMENDATIONS & OPTIMIZATION WORKFLOW ===
+
+1. STANDARD ACTION PLANS BY FAILURE TYPE
+
+A. HIGH CONGESTION (PRB Utilization > 85%, Low Throughput)
+- Short-Term: Tune Mobility Load Balancing (MLB) threshold. Set Event A4/A5 triggers to hand over traffic to co-located 2.3 GHz or 2.5 GHz bands (TDD) from the 1.8 GHz band (FDD).
+- Short-Term: Increase electrical downtilt by 1-2 degrees to restrict cell coverage footprint and shed edge users.
+- Mid-Term: Activate or optimize Carrier Aggregation (CA) between FDD and TDD bands.
+- Long-Term: Add new carriers (hardware expansion) or upgrade backhaul link capacity (e.g., upgrade microwave link from 1Gbps to 10Gbps fiber).
+
+B. POOR SIGNAL STRENGTH (RSRP < -100 dBm, Signal_Strength in -100 to -115 range)
+- Immediate: Check for active BTS hardware alarms (Voltage Standing Wave Ratio - VSWR alarms, RF module failures).
+- Short-Term: Adjust antenna mechanical tilt (decrease downtilt / up-tilt by 1-2 degrees) to extend propagation.
+- Short-Term: Increase sector reference signal pilot power (e.g., boost from 15W to 20W or add 3dB boost).
+- Long-Term: In dense urban spots, request site acquisition for micro/pico BTS node deployment to eliminate shadow regions.
+
+C. HANDOVER FAILURES (Handoff Failure > 5%, HOSR < 95%)
+- Immediate: Verify X2/S1 link status between neighboring cells and check GPS sync health.
+- Parameter Tuning: Modify LTE Event A3 parameters:
+  - If "Too Late HO": Decrease A3 Offset (hysteresis) or decrease Time-To-Trigger (TTT) (e.g., from 320ms to 160ms) to trigger handover earlier.
+  - If "Too Early HO / Ping-Pong": Increase Hysteresis (from 1dB to 2.5dB) or increase TTT (from 160ms to 320ms) to make handover more stable.
+- Neighbor List: Run ANR (Automatic Neighbor Relation) audit to see if missing neighbor relations are causing handover failures.
+- Physical: Audit antenna azimuth; check if sector coverage areas are overlapping excessively.
+
+2. LOG CORRELATION & INCIDENT ANALYSIS WORKFLOW
+- Step 1: Classify the primary symptom based on metrics:
+  - If Call_Drops is high AND Signal_Strength is low -> Primary issue is Coverage (Weak Signal).
+  - If Call_Drops is high AND Congestion_Level is High -> Primary issue is Capacity (Congestion).
+  - If Call_Drops is high AND Handoff_Failure is high -> Primary issue is Mobility (Handoff Failure).
+- Step 2: Validate if the issue is transient or persistent (compare multiple dates).
+- Step 3: Combine domain knowledge guidelines with structured database metrics to generate a consolidated report outlining Region, Tower, metrics, Root Cause, and exact parameter adjustments or field actions.

@@ -1,0 +1,23 @@
+=== TELECOM KNOWLEDGE: HANDOFF / HANDOVER FAILURE ===
+
+1. KEY CONCEPTS & METRICS
+- Handover Success Rate (HOSR): The percentage of initiated handovers that complete successfully. Target benchmark is > 98%.
+- Ping-Pong Handover: Occurs when a mobile user repeatedly switches back and forth between two neighboring cells. It wastes signaling capacity and leads to call drops.
+- Time-to-Trigger (TTT): The duration that a handover condition (e.g., target cell signal becomes better than source cell signal) must be satisfied before triggering a handover.
+- Hysteresis (Hom): The offset value added to the target cell's signal strength to prevent premature handover.
+
+2. COMMON HANDOVER FAILURE MODES
+- Too Late Handover: The handover command is sent too late, causing the call to drop on the source cell before the user equipment (UE) can connect to the target. (RSRP drops below critical threshold of -110 dBm before action).
+- Too Early Handover: The UE is handed over to a target cell that is still too weak, causing a connection failure and forcing the UE to attempt reconnection.
+- Wrong Cell Selection: Handover is triggered to an inappropriate cell due to missing neighbor list entries or overlapping signal patterns from co-channel cells.
+- Missing Neighbor Relations: The source cell does not have the target cell in its Neighbor Relation Table (NRT), preventing handover initialization.
+- Corner Effect / Shadowing: Rapid signal decay when a user turns a street corner, causing signal loss faster than the network can execute the handover.
+
+3. RECOVERY & MITIGATION PROTOCOLS
+- Parameter Optimization (Event A3 Tuning):
+  - Increase Hysteresis (Hom) or Time-to-Trigger (TTT) to reduce Ping-Pong handovers.
+  - Decrease Hysteresis or TTT if Too Late Handovers are occurring.
+- Cell Individual Offset (CIO): Adjust the CIO of the target cell. A positive CIO makes the target cell look artificially stronger, triggering earlier handover to it.
+- Automatic Neighbor Relation (ANR): Enable and monitor ANR functions to automatically detect missing neighbors and add them to the NRT.
+- Antenna Azimuth / Beam Adjustment: Adjust the azimuth (direction) or vertical tilt of the source/target antennas to refine the overlap coverage boundary.
+- Hardware Sync Audit: Check for synchronization mismatches (GPS or PTP IEEE 1588) between neighboring base stations, which can cause X2/S1 interface handover failures.

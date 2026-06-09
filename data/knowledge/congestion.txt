@@ -1,0 +1,25 @@
+=== TELECOM KNOWLEDGE: NETWORK CONGESTION ===
+
+1. KEY CONCEPTS & METRICS
+- PRB (Physical Resource Block) Utilization: The percentage of resource blocks allocated to user traffic.
+  - Normal: < 70%
+  - Warning: 70% to 85%
+  - Congested: > 85% (Leads to packet drop, high latency, and low throughput)
+- RRC Connected Users: The number of active Radio Resource Control connections. High numbers trigger control-plane congestion.
+- Signaling Congestion: High failure rates in RRC Connection Establishment due to random access channel (RACH) overloads.
+- Backhaul Congestion: High transport network packet loss or delay, indicating the bottleneck is between the BTS and Core Network.
+
+2. ROOT CAUSES OF CONGESTION
+- High Traffic Density: High density of active subscribers in commercial zones, transportation hubs, or residential complexes during peak hours.
+- Special Events: Flash crowds at stadiums, concert halls, or public gatherings overloading sector capacity.
+- Insufficient Frequency Spectrum: Small bandwidth allocation (e.g., only 5 MHz or 10 MHz carrier).
+- Backhaul Bottleneck: Slow microwave links or oversubscribed fiber backhauls.
+- Poor Load Balancing: Co-located carriers (e.g., LTE 1800 MHz and 2300 MHz) with unbalanced traffic allocation.
+
+3. RECOVERY & MITIGATION PROTOCOLS
+- Load Balancing Optimization: Adjust Mobility Load Balancing (MLB) parameters (A4/A5 thresholds) to handover users from congested carriers/cells to underutilized ones.
+- Traffic Shaping / Rate Limiting: Apply Quality of Service Class Identifier (QCI) policies to throttle non-essential traffic (e.g., background downloads) and protect voice (VoLTE QCI 1).
+- Carrier Aggregation: Enable or optimize multi-carrier aggregation to increase effective bandwidth per user.
+- Parameter Tuning: Modify Admission Control thresholds to restrict low-priority connections during high load.
+- Spectral Upgrade: Upgrade/add new frequency bands (e.g., deploy LTE TDD 2300/2500 MHz or activate 5G NR carriers).
+- Transport Backhaul Upgrade: Upgrade microwave hop bandwidth or lease additional optical fiber capacity.

@@ -1,0 +1,28 @@
+=== TELECOM KNOWLEDGE: WEAK SIGNAL ISSUES ===
+
+1. KEY CONCEPTS & METRICS
+- RSRP (Reference Signal Received Power): The linear average of power contributions of the resource elements carrying cell-specific reference signals.
+  - Excellent: > -80 dBm
+  - Good: -80 to -90 dBm
+  - Mid/Fair: -90 to -100 dBm
+  - Poor (Cell Edge / Weak Signal): -100 to -110 dBm
+  - Dead Zone: < -110 dBm
+- SINR (Signal-to-Interference-plus-Noise Ratio): Measures signal quality.
+  - Good: > 15 dB
+  - Fair: 5 to 15 dB
+  - Poor: < 5 dB
+- RSSI (Received Signal Strength Indicator): Total received power including noise and interference.
+
+2. ROOT CAUSES OF WEAK SIGNAL
+- Distance / Path Loss: User equipment (UE) is too far from the serving Base Transceiver Station (BTS).
+- Shadowing & Obstacles: Terrain, heavy vegetation, concrete structures, or high-rise buildings blocking line-of-sight (LoS).
+- Antenna Downtilt Misalignment: Excessive mechanical or electrical downtilt restricting the coverage area of the sector.
+- Feeder Cable / Connector Loss: High Voltage Standing Wave Ratio (VSWR) caused by damaged RF cables, water entry in connectors, or faulty Remote Radio Units (RRUs).
+- Hardware Degradation: Degradation of Power Amplifiers (PA) or low-noise amplifiers in the transceiver system.
+
+3. RECOVERY & MITIGATION PROTOCOLS
+- Antenna Tilt Adjustments: Decrease mechanical or electrical downtilt (up-tilt) to extend coverage footprint.
+- Power Boost: Increase the Pilot Power or maximum downlink transmit power (e.g., PDSCH Config) on the affected sector.
+- Hardware Inspection: Trigger field technician dispatch to measure VSWR, inspect RF jumpers, and replace faulty RRUs/antenna ports.
+- Neighbor Cell Tuning: Optimize cell individual offsets (CIO) to encourage earlier handover to stronger cells.
+- Densification: Propose installation of a micro-cell, pico-cell, or repeater to coverage-hole areas.
