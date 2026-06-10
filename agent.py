@@ -210,31 +210,80 @@ Executable SQL Query:
             return "Failed to retrieve domain knowledge from ChromaDB."
 
     def generate_final_report(self, query: str, sql_query: str, sql_context: str, vector_context: str):
-        prompt = f"""
-You are a Lead Telecom Network Operations Center (NOC) Analyst.
-You are tasked with generating a comprehensive, professional incident analysis and resolution report based on database metrics and vector domain knowledge.
+#           prompt = f"""
+# You are a Lead Telecom Network Operations Center (NOC) Analyst.
+# You are tasked with generating a comprehensive, professional incident analysis and resolution report based on database metrics and vector domain knowledge.
+
+# User Query:
+# "{query}"
+
+# Retrieved Database Metrics (from SQL Query: `{sql_query}`):
+# ---
+# {sql_context}
+# ---
+
+# Retrieved Telecom Domain Knowledge (from Vector DB):
+# ---
+# {vector_context}
+# ---
+
+# INSTRUCTIONS:
+# 1. Synthesize the structured database metrics with the unstructured domain knowledge to explain the root cause and provide actionable recommendations.
+# 2. Structure your response in a professional, markdown-formatted report containing the following sections:
+#    - ** Incident Overview**: Clear summary of the issue, affected regions/towers, and timestamp/dates of occurrence.
+#    - ** Database Metric Analysis**: Present the metrics (call drops, signal strength, congestion, handoffs) in a clear markdown table. Summarize key indicators.
+#    - ** Root Cause Analysis (RCA)**: Connect the data patterns to the telecom guidelines (e.g. correlation between low RSRP and high call drops, or high PRB utilization and congestion levels) and explain what is causing the degradation.
+#    - ** Actionable Recommendation Plan**: Provide short-term parameter tuning suggestions (e.g., Event A3 Hysteresis, Time-to-Trigger, Cell Individual Offset, electrical tilt adjustments, pilot power boosts) and long-term resolutions (e.g., backhaul upgrades, site densification) based on the domain knowledge.
+# 3. Be precise, technical, and quantitative. Avoid vague statements. If some metrics or facts are missing, state what is unknown.
+# """
+        prompt=f"""You are a Lead Telecom Network Operations Center (NOC) Analyst.
+Analyze the user's request using both the retrieved database metrics and telecom domain knowledge.
 
 User Query:
 "{query}"
 
 Retrieved Database Metrics (from SQL Query: `{sql_query}`):
----
 {sql_context}
----
 
-Retrieved Telecom Domain Knowledge (from Vector DB):
----
+Retrieved Telecom Domain Knowledge:
 {vector_context}
----
 
-INSTRUCTIONS:
-1. Synthesize the structured database metrics with the unstructured domain knowledge to explain the root cause and provide actionable recommendations.
-2. Structure your response in a professional, markdown-formatted report containing the following sections:
-   - ** Incident Overview**: Clear summary of the issue, affected regions/towers, and timestamp/dates of occurrence.
-   - ** Database Metric Analysis**: Present the metrics (call drops, signal strength, congestion, handoffs) in a clear markdown table. Summarize key indicators.
-   - ** Root Cause Analysis (RCA)**: Connect the data patterns to the telecom guidelines (e.g. correlation between low RSRP and high call drops, or high PRB utilization and congestion levels) and explain what is causing the degradation.
-   - ** Actionable Recommendation Plan**: Provide short-term parameter tuning suggestions (e.g., Event A3 Hysteresis, Time-to-Trigger, Cell Individual Offset, electrical tilt adjustments, pilot power boosts) and long-term resolutions (e.g., backhaul upgrades, site densification) based on the domain knowledge.
-3. Be precise, technical, and quantitative. Avoid vague statements. If some metrics or facts are missing, state what is unknown.
+Instructions:
+
+Base your analysis primarily on the database metrics. Use telecom domain knowledge only to explain observed patterns.
+Do not invent towers, regions, dates, KPIs, incidents, or root causes.
+If information is missing, explicitly state "Unknown" or "Not Available".
+Determine User Intent
+
+For informational queries (e.g., top towers, highest handoff failure, signal strength, congestion, comparisons, trends):
+Generate only:
+
+Incident Overview
+Database Metric Analysis
+
+For diagnostic queries containing words such as:
+"why", "cause", "issue", "problem", "failure", "degradation", "outage", "root cause", "recommend", "fix", "optimize"
+
+Generate:
+
+Incident Overview
+Database Metric Analysis
+Root Cause Analysis (RCA)
+Actionable Recommendation Plan
+Analysis Rules
+Present metrics in markdown tables when available.
+Provide quantitative observations.
+Generate RCA only when requested or when metrics clearly indicate a network issue.
+Recommendations must be directly supported by the data.
+No Data Rule
+
+If no database records are returned:
+
+State that no matching records were found.
+Do not generate RCA or recommendations.
+Suggest verifying the date range or data availability.
+
+Use professional telecom NOC reporting style and markdown formatting.
 """
         try:
             completion = self.groq_client.chat.completions.create(
